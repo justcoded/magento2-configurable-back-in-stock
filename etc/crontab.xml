@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="backinstock_configurable_notify_send_mail" instance="JustCoded\BackInStockConfigurable\Cron\Email" method="execute">
+            <config_path>justcoded_back_in_stock_configurable/settings/cron_expr_send_notifications</config_path>
+        </job>
+    </group>
+</config>

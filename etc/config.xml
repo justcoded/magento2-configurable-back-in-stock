@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <justcoded_back_in_stock_configurable>
+            <settings>
+                <attributes_sorting_order><![CDATA[size,color]]></attributes_sorting_order>
+                <cron_send_notifications_enable>1</cron_send_notifications_enable>
+                <cron_expr_send_notifications>*/30 * * * *</cron_expr_send_notifications>
+                <popup_header_cms_block_id>back-in-stock-configurable-popup-header</popup_header_cms_block_id>
+            </settings>
+        </justcoded_back_in_stock_configurable>
+    </default>
+</config>

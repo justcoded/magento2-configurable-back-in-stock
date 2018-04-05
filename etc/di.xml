@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="JustCoded\BackInStockConfigurable\Api\SubscriptionInterface" type="JustCoded\BackInStockConfigurable\Model\SubscriptionManagement" />
+    <preference for="JustCoded\BackInStockConfigurable\Api\SubscriptionRepositoryInterface" type="JustCoded\BackInStockConfigurable\Model\SubscriptionRepository" />
+</config>

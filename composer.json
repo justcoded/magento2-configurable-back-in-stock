@@ -1,0 +1,16 @@
+{
+  "name": "justcoded/backinstock-configurable",
+  "description": "Magento back in stock notifications for configurable product",
+  "require": {
+    "php": "~5.5.22|~5.6.0|7.0.2|7.0.4|~7.0.6"
+  },
+  "type": "magento2-module",
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "JustCoded\\BackInStockConfigurable\\": ""
+    }
+  }
+}

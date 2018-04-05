@@ -1,0 +1,20 @@
+JustCoded,JustCoded
+"Back in Stock Configurable","Back in Stock Configurable"
+Settings,Settings
+Enabled,Enabled
+"Send Notification Schedule","Send Notification Schedule"
+"Send Notifications by Schedule","Send Notifications by Schedule"
+"if this option is no, then all notifications will be send on product save (which will be bad for performance)","if this option is no, then all notifications will be send on product save (which will be bad for performance)"
+"cron expression","cron expression"
+"Can't find your configuration ?","Can't find your configuration ?"
+"Enter Your Name","Enter Your Name"
+"Enter Your Email","Enter Your Email"
+Submit,Submit
+"Please select an option","Please select an option"
+"You have no product for subscription.","You have no product for subscription."
+"You will be notified when product becomes available.","You will be notified when product becomes available."
+"Something went wrong during stock subscription, please try again later.","Something went wrong during stock subscription, please try again later.",
+"Attributes Sorting Order Inside of Subscribe Popup","Attributes Sorting Order Inside of Subscribe Popup"
+"comma separated attribute codes","comma separated attribute codes"
+"Subscribe to back in stock notification","Subscribe to back in stock notification"
+"Header CMS Block Identifier of Subscribe Popup","Header CMS Block Identifier of Subscribe Popup"

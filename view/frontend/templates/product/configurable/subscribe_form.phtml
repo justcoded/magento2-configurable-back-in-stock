@@ -1,0 +1,206 @@
+<?php
+/** @var JustCoded\BackInStockConfigurable\Block\Product\View $block */
+?>
+
+<div style="display: none;">
+    <div data-role="back-in-stock-notify-popup-content">
+        <form data-role="back-in-stock-notify-form">
+            <fieldset class="fieldset create stock-subscription">
+                <legend class="legend"><span><?php echo __('Subscribe to back in stock notification') ?></span></legend>
+
+                <?php echo $this->getHeaderContent() ?>
+
+                <?php $orderIndex = 1 ?>
+                <?php foreach ($this->getConfigurableAttributes() as $attribute): ?>
+                    <div class="field option required">
+                        <label for="stock-notification-subscription-<?php echo $attribute->getId() ?>" class="label">
+                            <span><?php echo $attribute->getFrontendLabel() ?></span>
+                        </label>
+                        <div class="control">
+                            <select name="stock-notification-subscription-<?php echo $attribute->getId() ?>"
+                                   title="<?php echo $attribute->getFrontendLabel() ?>"
+                                   id="stock-notification-subscription-<?php echo $attribute->getId() ?>"
+                                   data-role="stock-notifications-option"
+                                   data-stock-notification-order="<?php echo $orderIndex ?>"
+                                   required="required"
+                                   data-validate="{required:true}" autocomplete="off" aria-required="true">
+                                <option value><?php echo __('Please select an option') ?></option>
+                                <?php foreach ($this->getConfigurableAttributeOptions($attribute) as $optionId => $option): ?>
+                                    <option value='<?php echo $optionId ?>'
+                                            data-product-ids='<?php echo json_encode($option['product_ids']) ?>'>
+                                        <?php echo $option['label'] ?>
+                                    </option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <?php $orderIndex++ ?>
+                <?php endforeach ?>
+
+                <div class="field option required">
+                    <label for="stock-notification-subscription-email" class="label">
+                        <span><?php /*escapeNotVerified*/ echo __('Enter Your Email') ?></span>
+                    </label>
+                    <div class="control">
+                        <input name="email" id="email" type="email" required="required" class="input-text"
+                               title="<?php /*escapeNotVerified*/ echo __('Enter Your Email')?>"/>
+                    </div>
+                </div>
+
+                <button type="submit" style="display: none"><?php /*escapeNotVerified*/ echo __('Submit') ?></button>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+<script>
+    require([
+        'jquery',
+        'underscore',
+        'mage/storage',
+        'Magento_Ui/js/modal/modal',
+        'Magento_Ui/js/modal/alert'
+    ], function ($, _, storage, modal, alert) {
+        var formPopup = $('[data-role="back-in-stock-notify-popup-content"]').modal(getPopupOptions()),
+            form = $('[data-role="back-in-stock-notify-form"]'),
+            optionSelects = $('[data-role="stock-notifications-option"]'),
+            serviceUrl = '<?php echo $block->getServiceUrl() ?>',
+            currentConfigurableProduct = $('#product_addtocart_form input[name="product"]').val(),
+            MODAL_OPEN_DELAY = 600;
+
+        function getPopupOptions() {
+            return {
+                type: 'popup',
+                responsive: true,
+                innerScroll: false,
+                modalClass: 'back-in-stock-configurable-notification-modal',
+                title: '',
+                buttons: [{
+                    text: '<?php echo __('Submit') ?>',
+                    'class': 'action primary',
+                    click: function () {
+                        form.find('button[type="submit"]').click();
+                    }
+                }]
+            }
+        }
+
+        function getAlertOptions() {
+            return {
+                modalClass: 'back-in-stock-configurable-notification-alert'
+            }
+        }
+
+        function sendRequest(email, data, cb) {
+            var url = serviceUrl.replace(':email', encodeURIComponent(email));
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: JSON.stringify(data),
+                global: true,
+                contentType: 'application/json',
+                showLoader: true
+            }).done(
+                function (response) {
+                    cb(false, response);
+                }
+            ).fail(
+                function (response) {
+                    cb(true, response);
+                }
+            );
+        }
+
+        function normalizeOptionsSelect(targetSelects, dependedSelects) {
+            var selectedOptions = targetSelects.find('option:selected'),
+                selectedProductIds = _.union.apply(_, selectedOptions.toArray().map(function (el) { return $(el).data('productIds') }));
+
+            dependedSelects.each(function (i, el) {
+                var dependedSelect = $(el);
+
+                dependedSelect.find('option').show().each(function (i, el) {
+                    var option = $(el),
+                        dependedOptionProductIds = option.data('productIds');
+
+                    if (!option.val() || _.intersection(dependedOptionProductIds, selectedProductIds).length) {
+                        option.show().prop('disabled', false);
+                    } else {
+                        option.hide().prop('disabled', true);
+
+                        if (option.is(':selected')) {
+                            dependedSelect.val('');
+                        }
+                    }
+                });
+            });
+        }
+
+        $(document).on('click', '[data-role="back-in-stock-popup-link"]', function () {
+            formPopup.modal('openModal');
+        });
+
+        form.on('change', '[data-role="stock-notifications-option"]', function (ev) {
+            var targetOptionSelect = $(ev.target),
+                targetOptionSelectOrder = targetOptionSelect.data('stock-notification-order');
+
+            normalizeOptionsSelect(
+                optionSelects.toArray()
+                    .filter(function (el) { return $(el).data('stock-notification-order') <= targetOptionSelectOrder })
+                    .reduce(function (collection, el) { return collection.add($(el)) }, $()),
+                optionSelects.toArray()
+                    .filter(function (el) { return targetOptionSelectOrder < $(el).data('stock-notification-order') })
+                    .reduce(function (collection, el) { return collection.add($(el)) }, $()),
+            );
+        });
+
+        form.on('submit', function (ev) {
+            ev.preventDefault();
+
+            var selectedOptionsProducts = optionSelects.find('option:selected').toArray()
+                .map(function (el) {
+                    return $(el).data('productIds');
+                }),
+                selectedProduct = _.intersection.apply(_, selectedOptionsProducts)[0],
+                withError = false;
+
+            if (!selectedProduct) {
+                formPopup.modal('closeModal');
+
+                setTimeout(function () {
+                    alert(_.extend({}, getAlertOptions(), {
+                        content: "<?php echo __('You have no product for subscription.') ?>"
+                    }));
+                }, MODAL_OPEN_DELAY);
+            } else {
+                formPopup.modal('closeModal');
+
+                setTimeout(function () {
+                    if (withError) {
+                        return;
+                    }
+
+                    form[0].reset();
+
+                    alert(_.extend({}, getAlertOptions(), {
+                        content: "<?php echo __('You will be notified when product becomes available.') ?>"
+                    }));
+                }, 600);
+
+                sendRequest(form.find('[name="email"]').val(), {
+                    simple: JSON.stringify({id: selectedProduct}),
+                    configurable: JSON.stringify({id: currentConfigurableProduct})
+                }, function (err) {
+                    if (err) {
+                        withError = true;
+
+                        alert(_.extend({}, getAlertOptions(), {
+                            content: "<?php echo __('Something went wrong during stock subscription, please try again later.') ?>"
+                        }));
+                    }
+                });
+            }
+        });
+    });
+</script>
